@@ -35,6 +35,10 @@ print_usage() {
   echo -e "  ${GREEN}logs${NC}      Follow Docker Compose logs"
   echo -e "  ${GREEN}ps${NC}        Show running containers"
   echo ""
+  echo -e "${BOLD}Interactive CLI shells:${NC}"
+  echo -e "  ${GREEN}mysql${NC} | ${GREEN}cli:db${NC}    Connect to MySQL shell inside container"
+  echo -e "  ${GREEN}redis${NC} | ${GREEN}cli:redis${NC} Connect to redis-cli shell inside container"
+  echo ""
   echo -e "${BOLD}Secret generators:${NC}"
   echo -e "  ${GREEN}gen:jwt${NC}   Generate a random JWT_SECRET and update .env"
   echo -e "  ${GREEN}gen:redis${NC} Generate a random REDIS_PASSWORD and update .env"
@@ -100,26 +104,28 @@ cmd_gen_all() {
 }
 
 case "${1:-help}" in
-  dev)       bash "$SCRIPT_DIR/docker/dev.sh" ;;
-  build)     bash "$SCRIPT_DIR/docker/build.sh" ;;
-  start)     bash "$SCRIPT_DIR/docker/start.sh" ;;
-  prod)      bash "$SCRIPT_DIR/docker/prod.sh" ;;
-  stop)      bash "$SCRIPT_DIR/docker/stop.sh" ;;
-  clean)     bash "$SCRIPT_DIR/docker/clean.sh" ;;
-  prune)     bash "$SCRIPT_DIR/docker/prune.sh" ;;
-  logs)      docker compose -f "$SCRIPT_DIR/docker-compose.yml" logs -f ;;
-  ps)        docker compose -f "$SCRIPT_DIR/docker-compose.yml" ps ;;
-  gen:jwt)   cmd_gen_jwt ;;
-  gen:redis) cmd_gen_redis ;;
-  gen:db)    cmd_gen_db ;;
-  gen:all)   cmd_gen_all ;;
-  install:db)     npm i mysql2 ;;
-  install:cache)  npm i redis ;;
-  install:auth)   npm i jose ;;
-  install:bcrypt) npm i bcryptjs ;;
-  install:upload) npm i multer ;;
-  install:all)    npm i mysql2 redis jose bcryptjs multer ;;
-  help|--help|-h) print_usage ;;
+  dev)             bash "$SCRIPT_DIR/docker/dev.sh" ;;
+  build)           bash "$SCRIPT_DIR/docker/build.sh" ;;
+  start)           bash "$SCRIPT_DIR/docker/start.sh" ;;
+  prod)            bash "$SCRIPT_DIR/docker/prod.sh" ;;
+  stop)            bash "$SCRIPT_DIR/docker/stop.sh" ;;
+  clean)           bash "$SCRIPT_DIR/docker/clean.sh" ;;
+  prune)           bash "$SCRIPT_DIR/docker/prune.sh" ;;
+  logs)            docker compose -f "$SCRIPT_DIR/docker-compose.yml" logs -f ;;
+  ps)              docker compose -f "$SCRIPT_DIR/docker-compose.yml" ps ;;
+  mysql|cli:db)    bash "$SCRIPT_DIR/docker/mysql.sh" ;;
+  redis|cli:redis) bash "$SCRIPT_DIR/docker/redis.sh" ;;
+  gen:jwt)         cmd_gen_jwt ;;
+  gen:redis)       cmd_gen_redis ;;
+  gen:db)          cmd_gen_db ;;
+  gen:all)         cmd_gen_all ;;
+  install:db)      npm i mysql2 ;;
+  install:cache)   npm i redis ;;
+  install:auth)    npm i jose ;;
+  install:bcrypt)  npm i bcryptjs ;;
+  install:upload)  npm i multer ;;
+  install:all)     npm i mysql2 redis jose bcryptjs multer ;;
+  help|--help|-h)  print_usage ;;
   *)
     echo -e "${RED}Unknown command: $1${NC}"
     echo ""

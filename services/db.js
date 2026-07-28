@@ -17,7 +17,9 @@ export class Database {
       try {
         mysql = (await import("mysql2/promise")).default;
       } catch {
-        throw new Error("[Database] 'mysql2' package is not installed. Run: ./cli.sh install:db or npm i mysql2");
+        throw new Error(
+          "[Database] 'mysql2' package is not installed. Run: ./cli.sh install:db or npm i mysql2",
+        );
       }
 
       this.pool = mysql.createPool({
@@ -27,7 +29,7 @@ export class Database {
         user: process.env.DB_USER || "next_base",
         password: process.env.DB_PASSWORD || "",
         waitForConnections: true,
-        connectionLimit: 10,
+        connectionLimit: 20,
         queueLimit: 0,
         timezone: "+00:00",
       });

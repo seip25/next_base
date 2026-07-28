@@ -37,6 +37,8 @@ For full-stack applications requiring persistence, caching, and reverse proxying
 ├── docker/
 │   ├── Dockerfile        # Multi-stage production container build
 │   ├── nginx.conf        # Production Nginx reverse proxy & static asset server
+│   ├── mysql.sh          # Interactive MySQL shell script
+│   ├── redis.sh          # Interactive Redis CLI shell script
 │   ├── dev.sh            # Development stack launcher
 │   ├── build.sh          # Next.js & Docker build script
 │   ├── start.sh          # Container stack startup script
@@ -62,7 +64,7 @@ For full-stack applications requiring persistence, caching, and reverse proxying
 
 ## CLI Reference (`./cli.sh`)
 
-The root `cli.sh` script provides a unified interface for managing containers, secrets, and optional dependencies.
+The root `cli.sh` script provides a unified interface for managing containers, secrets, interactive shells, and optional dependencies.
 
 ```bash
 ./cli.sh <command>
@@ -80,6 +82,12 @@ The root `cli.sh` script provides a unified interface for managing containers, s
 | `prune` | Removes dangling Docker images and project build artifacts |
 | `logs` | Streams live Docker Compose logs |
 | `ps` | Lists running stack containers |
+
+### Interactive Container Shells
+| Command | Description |
+| :--- | :--- |
+| `mysql` or `cli:db` | Opens interactive MySQL shell inside container with `.env` credentials |
+| `redis` or `cli:redis` | Opens interactive `redis-cli` shell inside container with `.env` password |
 
 ### Secret Generator Commands
 | Command | Description |
