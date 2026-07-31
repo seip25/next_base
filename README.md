@@ -237,6 +237,38 @@ npm run cli worker
 ```
 Or it automatically starts in production (PM2) if `.env` contains `BACKGROUND_JOBS=true`.
 
+### 10. Data Validator & Sanitizer (`services/validator.js`)
+Requires `xss`. Provides schema-based validation with built-in XSS sanitization and multi-language support.
+```javascript
+import { Validator } from "@/services";
+
+const userSchema = {
+  name: { required: true, alphanumeric: true },
+  email: { required: true, email: true },
+  password: { required: true, min: 6 }
+};
+const validator = new Validator(userSchema, "en");
+
+// Usage in API Routes (App Router)
+export async function POST(request) {
+  const result = await validator.validate(request);
+  if (!result.success) return Response.json(result, { status: 400 });
+  
+  const { name, email, password } = result.data; // sanitized data
+  // ...
+}
+
+// Usage in Server Actions
+export async function createUser(formData) {
+  "use server";
+  const data = Object.fromEntries(formData.entries());
+  const result = await validator.validate(data);
+  
+  if (!result.success) return { errors: result.errors };
+  // ...
+}
+```
+
 ---
 
 ## Nginx Reverse Proxy & WebSocket Support (`docker/nginx.conf`)
