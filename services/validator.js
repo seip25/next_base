@@ -164,6 +164,7 @@ export class Validator {
 
     for (const [field, config] of Object.entries(this.schema)) {
       let value = body[field];
+      const displayField = config.alias || (field.charAt(0).toUpperCase() + field.slice(1));
 
       if (config.xss !== false && typeof value === "string") {
         body[field] = xss(value);
@@ -171,10 +172,10 @@ export class Validator {
       }
 
       if (config.required && validators.isEmpty(value)) {
-        messages.push(config.messages?.required || msg.required(field));
+        messages.push(config.messages?.required || msg.required(displayField));
         errors.push({
           field: field,
-          message: config.messages?.required || msg.required(field),
+          message: config.messages?.required || msg.required(displayField),
         });
         continue;
       }
@@ -184,78 +185,78 @@ export class Validator {
           config.min !== undefined &&
           !validators.isLength(value, { min: config.min })
         ) {
-          messages.push(config.messages?.min || msg.min(field, config.min));
+          messages.push(config.messages?.min || msg.min(displayField, config.min));
           errors.push({
             field: field,
-            message: config.messages?.min || msg.min(field, config.min),
+            message: config.messages?.min || msg.min(displayField, config.min),
           });
         }
         if (
           config.max !== undefined &&
           !validators.isLength(value, { max: config.max })
         ) {
-          messages.push(config.messages?.max || msg.max(field, config.max));
+          messages.push(config.messages?.max || msg.max(displayField, config.max));
           errors.push({
             field: field,
-            message: config.messages?.max || msg.max(field, config.max),
+            message: config.messages?.max || msg.max(displayField, config.max),
           });
         }
         if (config.email && !validators.isEmail(value)) {
-          messages.push(config.messages?.email || msg.email(field));
+          messages.push(config.messages?.email || msg.email(displayField));
           errors.push({
             field: field,
-            message: config.messages?.email || msg.email(field),
+            message: config.messages?.email || msg.email(displayField),
           });
         }
         if (config.number && !validators.isNumeric(value)) {
-          messages.push(config.messages?.number || msg.number(field));
+          messages.push(config.messages?.number || msg.number(displayField));
           errors.push({
             field: field,
-            message: config.messages?.number || msg.number(field),
+            message: config.messages?.number || msg.number(displayField),
           });
         }
         if (config.alpha && !validators.isAlpha(value)) {
-          messages.push(config.messages?.alpha || msg.alpha(field));
+          messages.push(config.messages?.alpha || msg.alpha(displayField));
           errors.push({
             field: field,
-            message: config.messages?.alpha || msg.alpha(field),
+            message: config.messages?.alpha || msg.alpha(displayField),
           });
         }
         if (config.alphanumeric && !validators.isAlphanumeric(value)) {
           messages.push(
-            config.messages?.alphanumeric || msg.alphanumeric(field),
+            config.messages?.alphanumeric || msg.alphanumeric(displayField),
           );
           errors.push({
             field: field,
-            message: config.messages?.alphanumeric || msg.alphanumeric(field),
+            message: config.messages?.alphanumeric || msg.alphanumeric(displayField),
           });
         }
         if (config.boolean && !validators.isBoolean(value)) {
-          messages.push(config.messages?.boolean || msg.boolean(field));
+          messages.push(config.messages?.boolean || msg.boolean(displayField));
           errors.push({
             field: field,
-            message: config.messages?.boolean || msg.boolean(field),
+            message: config.messages?.boolean || msg.boolean(displayField),
           });
         }
         if (config.date && !validators.isISO8601(value)) {
-          messages.push(config.messages?.date || msg.date(field));
+          messages.push(config.messages?.date || msg.date(displayField));
           errors.push({
             field: field,
-            message: config.messages?.date || msg.date(field),
+            message: config.messages?.date || msg.date(displayField),
           });
         }
         if (config.url && !validators.isURL(value)) {
-          messages.push(config.messages?.url || msg.url(field));
+          messages.push(config.messages?.url || msg.url(displayField));
           errors.push({
             field: field,
-            message: config.messages?.url || msg.url(field),
+            message: config.messages?.url || msg.url(displayField),
           });
         }
         if (config.in && !validators.isIn(value, config.in)) {
-          messages.push(config.messages?.in || msg.in(field, config.in));
+          messages.push(config.messages?.in || msg.in(displayField, config.in));
           errors.push({
             field: field,
-            message: config.messages?.in || msg.in(field, config.in),
+            message: config.messages?.in || msg.in(displayField, config.in),
           });
         }
         if (
@@ -263,29 +264,29 @@ export class Validator {
           !validators.equals(value, config.equals)
         ) {
           messages.push(
-            config.messages?.equals || msg.equals(field, config.equals),
+            config.messages?.equals || msg.equals(displayField, config.equals),
           );
           errors.push({
             field: field,
             message:
-              config.messages?.equals || msg.equals(field, config.equals),
+              config.messages?.equals || msg.equals(displayField, config.equals),
           });
         }
         if (
           config.password &&
           !validators.matches(value, /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{6,}$/)
         ) {
-          messages.push(config.messages?.password || msg.password(field));
+          messages.push(config.messages?.password || msg.password(displayField));
           errors.push({
             field: field,
-            message: config.messages?.password || msg.password(field),
+            message: config.messages?.password || msg.password(displayField),
           });
         }
         if (config.pattern && !validators.matches(value, config.pattern)) {
-          messages.push(config.messages?.pattern || msg.pattern(field));
+          messages.push(config.messages?.pattern || msg.pattern(displayField));
           errors.push({
             field: field,
-            message: config.messages?.pattern || msg.pattern(field),
+            message: config.messages?.pattern || msg.pattern(displayField),
           });
         }
       }

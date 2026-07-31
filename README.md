@@ -238,12 +238,13 @@ npm run cli worker
 Or it automatically starts in production (PM2) if `.env` contains `BACKGROUND_JOBS=true`.
 
 ### 10. Data Validator & Sanitizer (`services/validator.js`)
-Requires `xss`. Provides schema-based validation with built-in XSS sanitization and multi-language support.
+Requires `xss`. Provides schema-based validation with built-in XSS sanitization, multi-language support, automatic field capitalization, and custom field aliases.
 ```javascript
 import { Validator } from "@/services";
 
 const userSchema = {
-  name: { required: true, alphanumeric: true },
+  // Uses 'alias' to override the default capitalized field name ("Name")
+  name: { required: true, alphanumeric: true, alias: "Full Name" },
   email: { required: true, email: true },
   password: { required: true, min: 6 }
 };
