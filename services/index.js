@@ -8,3 +8,5 @@ export { Upload } from "./upload.js";
 export { ClientScripts } from "./client.js";
 export { queue, QueueService } from "./queue.js";
 export { Validator } from "./validator.js";
+export { RateLimit } from "./rate-limit.js";
+export { Mailer } from "./mailer.js";

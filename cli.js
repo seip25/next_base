@@ -303,7 +303,30 @@ const commands = {
   "install:upload": () => runCommand("npm i multer"),
   "install:queue": () => runCommand("npm i bullmq ioredis"),
   "install:validator": () => runCommand("npm i xss"),
-  "install:all": () => runCommand("npm i mysql2 redis jose bcryptjs multer bullmq ioredis xss"),
+  "install:mail": () => runCommand("npm i nodemailer"),
+  "install:all": () => runCommand("npm i mysql2 redis jose bcryptjs xss"),
+  "install:pwa": () => {
+    log("green", "[pwa] Generating public/manifest.json and public/sw.js...");
+    const publicDir = path.join(process.cwd(), "public");
+    if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir);
+    
+    const manifest = {
+      name: APP_NAME,
+      short_name: APP_NAME,
+      start_url: "/",
+      display: "standalone",
+      background_color: "#ffffff",
+      theme_color: "#000000",
+      icons: []
+    };
+    fs.writeFileSync(path.join(publicDir, "manifest.json"), JSON.stringify(manifest, null, 2));
+
+    const sw = `self.addEventListener("install", (e) => { e.waitUntil(caches.open("v1").then((cache) => cache.addAll(["/"]))); });
+self.addEventListener("fetch", (e) => { e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request))); });`;
+    fs.writeFileSync(path.join(publicDir, "sw.js"), sw);
+    
+    log("green", "PWA files generated! Add <link rel=\"manifest\" href=\"/manifest.json\"> to your layout.");
+  },
   worker: () => {
     log("green", "[worker] Starting BullMQ background worker...");
     runCommand("node jobs/index.js");
@@ -354,7 +377,9 @@ const commands = {
     log("green", "  install:upload npm i multer");
     log("green", "  install:queue  npm i bullmq ioredis");
     log("green", "  install:validator npm i xss");
-    log("green", "  install:all    npm i mysql2 redis jose bcryptjs multer bullmq ioredis xss\n");
+    log("green", "  install:mail   npm i nodemailer (not included in install:all)");
+    log("green", "  install:pwa    Generate manifest.json and sw.js in /public");
+    log("green", "  install:all    npm i mysql2 redis jose bcryptjs xss (basic dependencies)\n");
     console.log(`\n${colors.bold}Smart Database Commands:${colors.reset}`);
     log("green", "  mysql <table> [--limit=10] [--order-by=\"id desc\"]");
     log("green", "  mysql tables | columns <table> | query \"<sql>\"");

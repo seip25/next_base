@@ -98,7 +98,10 @@ npm run cli install:auth    # Installs jose
 npm run cli install:bcrypt  # Installs bcryptjs
 npm run cli install:upload  # Installs multer
 npm run cli install:queue   # Installs bullmq and ioredis
-npm run cli install:all     # Installs all optional dependencies
+npm run cli install:validator # Installs xss
+npm run cli install:mail    # Installs nodemailer
+npm run cli install:all     # Installs basic dependencies (db, cache, auth, bcrypt, validator)
+npm run cli install:pwa     # Generates manifest.json and sw.js in public/
 ```
 
 ### Smart Database & Utility Commands
@@ -268,6 +271,64 @@ export async function createUser(formData) {
   if (!result.success) return { errors: result.errors };
   // ...
 }
+```
+
+### 11. Rate Limiting (`services/rate-limit.js`)
+Application-level rate limiting using Redis, useful for protecting sensitive endpoints (like login) before they reach the database.
+```javascript
+import { RateLimit } from "@/services";
+
+export async function POST(req) {
+  // Allow max 5 requests per 60 seconds
+  const isAllowed = await RateLimit.check(req, "login_attempt", 5, 60);
+  if (!isAllowed) {
+    return Response.json({ error: "Too many requests" }, { status: 429 });
+  }
+}
+```
+
+### 12. Mailer (`services/mailer.js`)
+Requires `nodemailer`. Provides a standard interface for sending SMTP emails. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM` in `.env`.
+```javascript
+import { Mailer } from "@/services";
+
+await Mailer.send(
+  "user@example.com", 
+  "Welcome!", 
+  "<h1>Thanks for registering</h1>"
+);
+```
+
+---
+
+## Built-in SEO Automation (`src/app/sitemap.js` & `src/app/robots.js`)
+
+The template automatically generates dynamic SEO files using Next.js Metadata API based on your `src/proxy.js` rules:
+- **`sitemap.xml`**: Dynamically maps all `publicRoutes` defined in `proxyConfig`.
+- **`robots.txt`**: Automatically injects `Disallow` rules for all `protectedRoutes` defined in `proxyConfig`.
+
+No manual maintenance of XML or TXT files is required.
+
+---
+
+## PWA Support
+
+You can instantly convert your application into an installable Progressive Web App (PWA) with offline capabilities.
+
+Run the installer via the CLI:
+```bash
+npm run cli install:pwa
+```
+
+This command will:
+1. Generate a standard `public/manifest.json`.
+2. Generate an offline-first service worker script at `public/sw.js`.
+
+**Final Step**: To activate it, simply add the manifest link to your `src/app/layout.js` inside the `<head>` or via Next.js Metadata:
+```javascript
+export const metadata = {
+  manifest: "/manifest.json",
+};
 ```
 
 ---

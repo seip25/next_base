@@ -9,14 +9,16 @@ export const config = {
   ],
 };
 
-/**
- * Next.js proxy function enforcing access rules for /dashboard and /login.
- */
-export const proxy = withAuth({
+export const proxyConfig = {
   publicRoutes: ["/login"],
   protectedRoutes: ["/dashboard"],
   loginUrl: "/login",
   dashboardUrl: "/dashboard",
-});
+};
+
+/**
+ * Next.js proxy function enforcing access rules for /dashboard and /login.
+ */
+export const proxy = withAuth(proxyConfig);
 
 export default proxy;
