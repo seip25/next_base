@@ -72,6 +72,25 @@ function updateEnv(key, value) {
   fs.writeFileSync(ENV_FILE, envContent.trim() + "\n");
 }
 
+/**
+ * @param {string[]} args
+ * @returns {{ flags: Record<string, string|boolean>, positional: string[] }}
+ */
+function parseCliArgs(args) {
+  const flags = {};
+  const positional = [];
+  args.forEach((arg) => {
+    if (arg.startsWith("--")) {
+      const parts = arg.split("=");
+      const key = parts[0].replace("--", "");
+      flags[key] = parts.slice(1).join("=") || true;
+    } else {
+      positional.push(arg);
+    }
+  });
+  return { flags, positional };
+}
+
 const commands = {
   dev: () => {
     log("green", "[dev] Starting MySQL and Redis via Docker Compose...");
@@ -145,32 +164,111 @@ const commands = {
     log("green", "[prune] Removing project images...");
     runCommand(`docker rmi "${APP_NAME}_nextjs" 2>/dev/null || true`);
   },
-  logs: () => {
-    runCommand("docker compose logs -f");
+  logs: (args = []) => {
+    const service = args[0] ? ` ${args[0]}` : "";
+    runCommand(`docker compose logs -f${service}`);
   },
   ps: () => {
     runCommand("docker compose ps");
   },
-  mysql: () => {
+  status: () => {
+    runCommand("docker compose ps -a");
+  },
+  mysql: (args = []) => {
     const dbUser = process.env.DB_USER || "next_base";
     const dbPass = process.env.DB_PASSWORD || "next_base";
     const dbName = process.env.DB_NAME || "next_base";
-    log("green", "[mysql] Connecting to MySQL shell in container...");
-    runCommand(
-      `docker compose exec -it mysql mysql -u"${dbUser}" -p"${dbPass}" "${dbName}"`,
-    );
-  },
-  "cli:db": () => commands.mysql(),
-  redis: () => {
-    log("green", "[redis] Connecting to redis-cli in container...");
-    const redisPass = process.env.REDIS_PASSWORD;
-    if (redisPass) {
-      runCommand(`docker compose exec -it redis redis-cli -a "${redisPass}"`);
-    } else {
-      runCommand(`docker compose exec -it redis redis-cli`);
+    
+    if (args.length === 0) {
+      log("green", "[mysql] Connecting to MySQL shell in container...");
+      runCommand(
+        `docker compose exec -it mysql mysql -u"${dbUser}" -p"${dbPass}" "${dbName}"`,
+      );
+      return;
+    }
+
+    const { flags, positional } = parseCliArgs(args);
+    const subCmd = positional[0];
+    const baseExec = `docker compose exec -T mysql mysql -u"${dbUser}" -p"${dbPass}" "${dbName}" -e`;
+
+    if (subCmd === "tables") {
+      runCommand(`${baseExec} "SHOW TABLES;" -t`);
+    } else if (subCmd === "columns" && positional[1]) {
+      runCommand(`${baseExec} "SHOW COLUMNS FROM ${positional[1]};" -t`);
+    } else if (subCmd === "query" && positional[1]) {
+      runCommand(`${baseExec} "${positional[1]}" -t`);
+    } else if (subCmd) {
+      const limit = flags.limit || 10;
+      let orderClause = "";
+      if (flags["order-by"]) {
+        orderClause = `ORDER BY ${flags["order-by"]}`;
+      }
+      const query = `SELECT * FROM ${subCmd} ${orderClause} LIMIT ${limit};`;
+      runCommand(`${baseExec} "${query}" -t`);
     }
   },
-  "cli:redis": () => commands.redis(),
+  "cli:db": (args) => commands.mysql(args),
+  redis: (args = []) => {
+    const redisPass = process.env.REDIS_PASSWORD;
+    const auth = redisPass ? `-a "${redisPass}"` : "";
+    
+    if (args.length === 0) {
+      log("green", "[redis] Connecting to redis-cli in container...");
+      runCommand(`docker compose exec -it redis redis-cli ${auth}`);
+      return;
+    }
+
+    const baseExec = `docker compose exec -T redis redis-cli ${auth}`;
+    const subCmd = args[0];
+    
+    if (subCmd === "keys") {
+      runCommand(`${baseExec} KEYS "${args[1] || '*'}"`);
+    } else if (subCmd === "get" && args[1]) {
+      runCommand(`${baseExec} GET "${args[1]}"`);
+    } else if (subCmd === "del" && args[1]) {
+      runCommand(`${baseExec} DEL "${args[1]}"`);
+    } else if (subCmd === "flush") {
+      runCommand(`${baseExec} FLUSHDB`);
+    } else if (subCmd === "info") {
+      runCommand(`${baseExec} INFO`);
+    } else if (subCmd === "monitor") {
+      runCommand(`${baseExec} MONITOR`);
+    } else {
+      runCommand(`${baseExec} ${args.join(" ")}`);
+    }
+  },
+  "cli:redis": (args) => commands.redis(args),
+  "db:backup": () => {
+    const dbUser = process.env.DB_USER || "next_base";
+    const dbPass = process.env.DB_PASSWORD || "next_base";
+    const dbName = process.env.DB_NAME || "next_base";
+    const date = new Date().toISOString().replace(/[:.]/g, "-");
+    const file = `backup-${date}.sql`;
+    log("green", `[db:backup] Creating backup ${file}...`);
+    runCommand(`docker compose exec -T mysql mysqldump -u"${dbUser}" -p"${dbPass}" "${dbName}" > ${file}`);
+    log("green", "[db:backup] Done.");
+  },
+  "db:import": (args = []) => {
+    if (!args[0]) {
+      log("red", "[db:import] Please provide a SQL file to import.");
+      return;
+    }
+    const dbUser = process.env.DB_USER || "next_base";
+    const dbPass = process.env.DB_PASSWORD || "next_base";
+    const dbName = process.env.DB_NAME || "next_base";
+    log("green", `[db:import] Importing ${args[0]}...`);
+    runCommand(`docker compose exec -T mysql mysql -u"${dbUser}" -p"${dbPass}" "${dbName}" < ${args[0]}`);
+    log("green", "[db:import] Done.");
+  },
+  "env:check": () => {
+    const required = ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "REDIS_HOST"];
+    const missing = required.filter(key => !process.env[key]);
+    if (missing.length > 0) {
+      log("red", `[env:check] Missing required environment variables: ${missing.join(", ")}`);
+      process.exit(1);
+    }
+    log("green", "[env:check] All required environment variables are present.");
+  },
   "gen:jwt": () => {
     const secret = generateSecret(32);
     updateEnv("JWT_SECRET", secret);
@@ -249,15 +347,23 @@ const commands = {
     log("green", "  install:bcrypt npm i bcryptjs");
     log("green", "  install:upload npm i multer");
     log("green", "  install:all    npm i mysql2 redis jose bcryptjs multer\n");
+    console.log(`\n${colors.bold}Smart Database Commands:${colors.reset}`);
+    log("green", "  mysql <table> [--limit=10] [--order-by=\"id desc\"]");
+    log("green", "  mysql tables | columns <table> | query \"<sql>\"");
+    log("green", "  redis keys | get <key> | del <key> | flush | info | monitor");
+    log("green", "  db:backup      Create a SQL dump in the current directory");
+    log("green", "  db:import <f>  Import a SQL file to the database");
+    log("green", "  env:check      Validate required environment variables");
   },
 };
 
 const cmd = process.argv[2] || "help";
+const args = process.argv.slice(3);
 
 if (["help", "--help", "-h"].includes(cmd)) {
   commands.help();
 } else if (commands[cmd]) {
-  commands[cmd]();
+  commands[cmd](args);
 } else {
   log("red", `Unknown command: ${cmd}\n`);
   commands.help();
