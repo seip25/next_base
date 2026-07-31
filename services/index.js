@@ -6,3 +6,4 @@ export { AuthProxy, withAuth } from "./middleware.js";
 export { Password, hashPassword, comparePassword } from "./password.js";
 export { Upload } from "./upload.js";
 export { ClientScripts } from "./client.js";
+export { queue, QueueService } from "./queue.js";

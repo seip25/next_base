@@ -301,7 +301,12 @@ const commands = {
   "install:auth": () => runCommand("npm i jose"),
   "install:bcrypt": () => runCommand("npm i bcryptjs"),
   "install:upload": () => runCommand("npm i multer"),
-  "install:all": () => runCommand("npm i mysql2 redis jose bcryptjs multer"),
+  "install:queue": () => runCommand("npm i bullmq ioredis"),
+  "install:all": () => runCommand("npm i mysql2 redis jose bcryptjs multer bullmq ioredis"),
+  worker: () => {
+    log("green", "[worker] Starting BullMQ background worker...");
+    runCommand("node jobs/index.js");
+  },
   help: () => {
     log("cyan", `\n${colors.bold}${APP_NAME} CLI`);
     console.log(`\n${colors.bold}Usage:${colors.reset} node cli.js <command>`);
@@ -346,7 +351,8 @@ const commands = {
     log("green", "  install:auth   npm i jose");
     log("green", "  install:bcrypt npm i bcryptjs");
     log("green", "  install:upload npm i multer");
-    log("green", "  install:all    npm i mysql2 redis jose bcryptjs multer\n");
+    log("green", "  install:queue  npm i bullmq ioredis");
+    log("green", "  install:all    npm i mysql2 redis jose bcryptjs multer bullmq ioredis\n");
     console.log(`\n${colors.bold}Smart Database Commands:${colors.reset}`);
     log("green", "  mysql <table> [--limit=10] [--order-by=\"id desc\"]");
     log("green", "  mysql tables | columns <table> | query \"<sql>\"");
@@ -354,6 +360,8 @@ const commands = {
     log("green", "  db:backup      Create a SQL dump in the current directory");
     log("green", "  db:import <f>  Import a SQL file to the database");
     log("green", "  env:check      Validate required environment variables");
+    console.log(`\n${colors.bold}Background Jobs:${colors.reset}`);
+    log("green", "  worker         Start the BullMQ background worker (jobs/index.js)");
   },
 };
 

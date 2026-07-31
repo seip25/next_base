@@ -17,3 +17,18 @@ module.exports = {
     },
   ],
 };
+
+if (process.env.BACKGROUND_JOBS === "true" || process.env.BACKGROUND_JOBS === "1") {
+  module.exports.apps.push({
+    name: process.env.APP_NAME ? `${process.env.APP_NAME}_worker` : "next_base_worker",
+    script: "jobs/index.js",
+    instances: 1,
+    exec_mode: "fork",
+    env: {
+      NODE_ENV: "production",
+    },
+    env_development: {
+      NODE_ENV: "development",
+    },
+  });
+}

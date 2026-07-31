@@ -97,7 +97,22 @@ npm run cli install:cache   # Installs redis
 npm run cli install:auth    # Installs jose
 npm run cli install:bcrypt  # Installs bcryptjs
 npm run cli install:upload  # Installs multer
+npm run cli install:queue   # Installs bullmq and ioredis
 npm run cli install:all     # Installs all optional dependencies
+```
+
+### Smart Database & Utility Commands
+Directly query and manage services without opening a shell:
+```bash
+npm run cli mysql users --limit=100    # Query table with limit
+npm run cli mysql tables               # List tables
+npm run cli mysql query "SELECT 1"     # Arbitrary query
+npm run cli redis keys                 # List redis keys
+npm run cli redis monitor              # Monitor redis commands
+npm run cli db:backup                  # SQL dump to local directory
+npm run cli db:import dump.sql         # Import SQL file
+npm run cli env:check                  # Validate required environment variables
+npm run cli worker                     # Start the background job processor
 ```
 
 ---
@@ -204,6 +219,23 @@ export default function RootLayout({ children }) {
   );
 }
 ```
+
+### 9. Background Jobs Queue (`services/queue.js`)
+Requires `bullmq` and `ioredis`. 
+```javascript
+import { queue } from "@/services";
+
+// Dispatch a job for the background worker
+await queue.dispatch("backup", { some: "data" });
+
+// Schedule a recurring cron job
+await queue.schedule("backup", {}, "0 0 * * *"); // Every day at midnight
+```
+Worker process is defined in `jobs/index.js` and can be started via:
+```bash
+npm run cli worker
+```
+Or it automatically starts in production (PM2) if `.env` contains `BACKGROUND_JOBS=true`.
 
 ---
 
