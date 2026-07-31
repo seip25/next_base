@@ -45,7 +45,8 @@ npm run cli prod   # Builds & starts Nginx, MySQL, Redis, Next.js with PM2 in Do
 │   ├── cookies.js        # Next.js server cookie helper class (Cookies)
 │   ├── middleware.js     # Route protection HOF helper (AuthProxy)
 │   ├── password.js       # bcryptjs hashing and comparison helper (Password)
-│   └── upload.js         # File upload handler for Web API FormData & multer (Upload)
+│   ├── upload.js         # File upload handler for Web API FormData & multer (Upload)
+│   └── client.js         # Client-side dynamic script loader (ClientScripts)
 └── src/
     ├── proxy.js          # Next.js route protection proxy convention
     └── app/              # Next.js App Router pages & components
@@ -186,6 +187,22 @@ export const proxy = withAuth({
 });
 
 export default proxy;
+```
+
+### 8. Client Script Loader (`services/client.js`)
+```javascript
+import { ClientScripts } from "@/services";
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <ClientScripts scripts={["bootstrap/dist/js/bootstrap.bundle.min.js", "beercss"]} />
+      </body>
+    </html>
+  );
+}
 ```
 
 ---
