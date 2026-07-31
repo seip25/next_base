@@ -302,7 +302,8 @@ const commands = {
   "install:bcrypt": () => runCommand("npm i bcryptjs"),
   "install:upload": () => runCommand("npm i multer"),
   "install:queue": () => runCommand("npm i bullmq ioredis"),
-  "install:all": () => runCommand("npm i mysql2 redis jose bcryptjs multer bullmq ioredis"),
+  "install:validator": () => runCommand("npm i xss"),
+  "install:all": () => runCommand("npm i mysql2 redis jose bcryptjs multer bullmq ioredis xss"),
   worker: () => {
     log("green", "[worker] Starting BullMQ background worker...");
     runCommand("node jobs/index.js");
@@ -352,7 +353,8 @@ const commands = {
     log("green", "  install:bcrypt npm i bcryptjs");
     log("green", "  install:upload npm i multer");
     log("green", "  install:queue  npm i bullmq ioredis");
-    log("green", "  install:all    npm i mysql2 redis jose bcryptjs multer bullmq ioredis\n");
+    log("green", "  install:validator npm i xss");
+    log("green", "  install:all    npm i mysql2 redis jose bcryptjs multer bullmq ioredis xss\n");
     console.log(`\n${colors.bold}Smart Database Commands:${colors.reset}`);
     log("green", "  mysql <table> [--limit=10] [--order-by=\"id desc\"]");
     log("green", "  mysql tables | columns <table> | query \"<sql>\"");
