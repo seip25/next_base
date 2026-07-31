@@ -28,7 +28,9 @@ export class Cache {
       createClient = redisModule.createClient;
     } catch {
       this.connecting = false;
-      throw new Error("[Cache] 'redis' package is not installed. Run: ./cli.sh install:cache or npm i redis");
+      throw new Error(
+        "[Cache] 'redis' package is not installed. Run: npm run cli  install:cache or npm i redis",
+      );
     }
 
     const password = process.env.REDIS_PASSWORD;
@@ -39,7 +41,9 @@ export class Cache {
       : `redis://${host}:${port}`;
 
     this.client = createClient({ url });
-    this.client.on("error", (err) => console.error("[Cache] Redis error:", err));
+    this.client.on("error", (err) =>
+      console.error("[Cache] Redis error:", err),
+    );
     await this.client.connect();
     this.connecting = false;
 
@@ -71,7 +75,8 @@ export class Cache {
    */
   async set(key, value, ttlSeconds) {
     const client = await this.getClient();
-    const serialized = typeof value === "string" ? value : JSON.stringify(value);
+    const serialized =
+      typeof value === "string" ? value : JSON.stringify(value);
     if (ttlSeconds) {
       await client.setEx(key, ttlSeconds, serialized);
     } else {

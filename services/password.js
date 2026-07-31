@@ -11,7 +11,9 @@ export class Password {
       const module = await import("bcryptjs");
       return module.default || module;
     } catch {
-      throw new Error("[Password] 'bcryptjs' package is not installed. Run: ./cli.sh install:bcrypt or npm i bcryptjs");
+      throw new Error(
+        "[Password] 'bcryptjs' package is not installed. Run: npm run cli  install:bcrypt or npm i bcryptjs",
+      );
     }
   }
 

@@ -17,7 +17,9 @@ export class Upload {
       const multer = multerModule.default || multerModule;
       return multer(options);
     } catch {
-      throw new Error("[Upload] 'multer' package is not installed. Run: ./cli.sh install:upload or npm i multer");
+      throw new Error(
+        "[Upload] 'multer' package is not installed. Run: npm run cli  install:upload or npm i multer",
+      );
     }
   }
 
@@ -71,7 +73,10 @@ export class Upload {
       originalName = file.filename || "file";
     } else if (Buffer.isBuffer(file)) {
       buffer = file;
-    } else if ("arrayBuffer" in file && typeof file.arrayBuffer === "function") {
+    } else if (
+      "arrayBuffer" in file &&
+      typeof file.arrayBuffer === "function"
+    ) {
       const arrayBuffer = await file.arrayBuffer();
       buffer = Buffer.from(arrayBuffer);
       originalName = file.name || "file";

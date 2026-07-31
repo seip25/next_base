@@ -22,7 +22,9 @@ export class Auth {
     try {
       return await import("jose");
     } catch {
-      throw new Error("[Auth] 'jose' package is not installed. Run: ./cli.sh install:auth or npm i jose");
+      throw new Error(
+        "[Auth] 'jose' package is not installed. Run: npm run cli  install:auth or npm i jose",
+      );
     }
   }
 

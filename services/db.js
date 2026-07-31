@@ -18,7 +18,7 @@ export class Database {
         mysql = (await import("mysql2/promise")).default;
       } catch {
         throw new Error(
-          "[Database] 'mysql2' package is not installed. Run: ./cli.sh install:db or npm i mysql2",
+          "[Database] 'mysql2' package is not installed. Run: npm run cli  install:db or npm i mysql2",
         );
       }
 
