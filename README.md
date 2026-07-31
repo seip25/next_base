@@ -19,8 +19,8 @@ npm run start   # Starts Next.js production server
 ### 2. Containerized Stack (MySQL + Redis + Nginx + PM2)
 For full-stack applications requiring persistence, caching, and reverse proxying:
 ```bash
-./cli.sh dev    # Starts MySQL & Redis in Docker + Next.js locally
-./cli.sh prod   # Builds & starts Nginx, MySQL, Redis, Next.js with PM2 in Docker
+npm run cli dev    # Starts MySQL & Redis in Docker + Next.js locally
+npm run cli prod   # Builds & starts Nginx, MySQL, Redis, Next.js with PM2 in Docker
 ```
 
 ---
@@ -31,21 +31,12 @@ For full-stack applications requiring persistence, caching, and reverse proxying
 .
 ├── .env                  # Active environment variables
 ├── .env.example          # Environment variable template
-├── cli.sh                # Unified management CLI
+├── cli.js                # Unified management Node CLI
 ├── ecosystem.config.js   # PM2 Cluster mode configuration
 ├── docker-compose.yml    # Container orchestration definitions
 ├── docker/
 │   ├── Dockerfile        # Multi-stage production container build
-│   ├── nginx.conf        # Production Nginx reverse proxy & static asset server
-│   ├── mysql.sh          # Interactive MySQL shell script
-│   ├── redis.sh          # Interactive Redis CLI shell script
-│   ├── dev.sh            # Development stack launcher
-│   ├── build.sh          # Next.js & Docker build script
-│   ├── start.sh          # Container stack startup script
-│   ├── prod.sh           # One-shot production build & deploy script
-│   ├── stop.sh           # Container stack shutdown script
-│   ├── clean.sh          # Volume & build cache cleanup script
-│   └── prune.sh          # Docker dangling resource pruner
+│   └── nginx.conf        # Production Nginx reverse proxy & static asset server
 ├── services/
 │   ├── index.js          # Main services entry point (re-exports)
 │   ├── db.js             # MySQL2 pool wrapper class (Database)
@@ -62,12 +53,12 @@ For full-stack applications requiring persistence, caching, and reverse proxying
 
 ---
 
-## CLI Reference (`./cli.sh`)
+## CLI Reference (`npm run cli`)
 
-The root `cli.sh` script provides a unified interface for managing containers, secrets, interactive shells, and optional dependencies.
+The root `cli.js` script provides a unified Node.js interface for managing containers, secrets, interactive shells, and optional dependencies.
 
 ```bash
-./cli.sh <command>
+npm run cli <command>
 ```
 
 ### Stack Management Commands
@@ -100,12 +91,12 @@ The root `cli.sh` script provides a unified interface for managing containers, s
 ### Dependency Installer Commands
 Install additional dependencies on demand:
 ```bash
-./cli.sh install:db      # Installs mysql2
-./cli.sh install:cache   # Installs redis
-./cli.sh install:auth    # Installs jose
-./cli.sh install:bcrypt  # Installs bcryptjs
-./cli.sh install:upload  # Installs multer
-./cli.sh install:all     # Installs all optional dependencies
+npm run cli install:db      # Installs mysql2
+npm run cli install:cache   # Installs redis
+npm run cli install:auth    # Installs jose
+npm run cli install:bcrypt  # Installs bcryptjs
+npm run cli install:upload  # Installs multer
+npm run cli install:all     # Installs all optional dependencies
 ```
 
 ---
