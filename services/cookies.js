@@ -1,9 +1,20 @@
-import { cookies } from "next/headers";
-
 /**
  * Cookie manager class for Next.js server components and route handlers.
  */
 export class Cookies {
+  /**
+   * Helper to retrieve Next.js cookies store dynamically.
+   * @returns {Promise<any>}
+   */
+  static async getStore() {
+    try {
+      const { cookies } = await import("next/headers");
+      return await cookies();
+    } catch {
+      throw new Error("[Cookies] 'Cookies' service can only be used within Next.js Server Components, Actions, or Route Handlers.");
+    }
+  }
+
   /**
    * Returns default cookie options based on active environment.
    * @returns {Object}
@@ -26,7 +37,7 @@ export class Cookies {
    * @returns {Promise<void>}
    */
   static async set(name, value, options = {}) {
-    const store = await cookies();
+    const store = await Cookies.getStore();
     const mergedOptions = { ...Cookies.getDefaultOptions(), ...options };
     store.set(name, value, mergedOptions);
   }
@@ -37,7 +48,7 @@ export class Cookies {
    * @returns {Promise<string|undefined>}
    */
   static async get(name) {
-    const store = await cookies();
+    const store = await Cookies.getStore();
     const cookie = store.get(name);
     return cookie?.value;
   }
@@ -48,7 +59,7 @@ export class Cookies {
    * @returns {Promise<boolean>}
    */
   static async has(name) {
-    const store = await cookies();
+    const store = await Cookies.getStore();
     return store.has(name);
   }
 
@@ -58,7 +69,7 @@ export class Cookies {
    * @returns {Promise<void>}
    */
   static async delete(name) {
-    const store = await cookies();
+    const store = await Cookies.getStore();
     store.delete(name);
   }
 
@@ -67,7 +78,7 @@ export class Cookies {
    * @returns {Promise<Array<Object>>}
    */
   static async getAll() {
-    const store = await cookies();
+    const store = await Cookies.getStore();
     return store.getAll();
   }
 }

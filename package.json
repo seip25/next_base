@@ -10,9 +10,14 @@
     "cli": "node cli.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.7",
+    "mysql2": "^3.23.2",
     "next": "16.2.12",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "redis": "^6.2.0",
+    "xss": "^1.0.15"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

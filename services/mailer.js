@@ -1,13 +1,22 @@
-import nodemailer from "nodemailer";
-
 /**
  * Mailer service for sending emails via SMTP.
  */
 export class Mailer {
   /**
-   * @returns {nodemailer.Transporter}
+   * Dynamically loads nodemailer and creates transporter.
+   * @returns {Promise<any>}
    */
-  static getTransporter() {
+  static async getTransporter() {
+    let nodemailerModule;
+    try {
+      nodemailerModule = await import("nodemailer");
+    } catch {
+      throw new Error(
+        "[Mailer] 'nodemailer' package is not installed. Run: npm run cli install:mail or npm i nodemailer"
+      );
+    }
+    const nodemailer = nodemailerModule.default || nodemailerModule;
+
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || "587"),
@@ -27,7 +36,7 @@ export class Mailer {
    * @returns {Promise<any>}
    */
   static async send(to, subject, html, from = process.env.SMTP_FROM) {
-    const transporter = Mailer.getTransporter();
+    const transporter = await Mailer.getTransporter();
     return await transporter.sendMail({
       from,
       to,
@@ -36,3 +45,4 @@ export class Mailer {
     });
   }
 }
+

@@ -304,7 +304,7 @@ const commands = {
   "install:queue": () => runCommand("npm i bullmq ioredis"),
   "install:validator": () => runCommand("npm i xss"),
   "install:mail": () => runCommand("npm i nodemailer"),
-  "install:all": () => runCommand("npm i mysql2 redis jose bcryptjs xss"),
+  "install:all": () => runCommand("npm i mysql2 redis jose bcryptjs"),
   "install:pwa": () => {
     log("green", "[pwa] Generating public/manifest.json and public/sw.js...");
     const publicDir = path.join(process.cwd(), "public");
@@ -376,10 +376,10 @@ self.addEventListener("fetch", (e) => { e.respondWith(caches.match(e.request).th
     log("green", "  install:bcrypt npm i bcryptjs");
     log("green", "  install:upload npm i multer");
     log("green", "  install:queue  npm i bullmq ioredis");
-    log("green", "  install:validator npm i xss");
-    log("green", "  install:mail   npm i nodemailer (not included in install:all)");
+    log("green", "  install:validator npm i xss (optional for advanced sanitization)");
+    log("green", "  install:mail   npm i nodemailer");
     log("green", "  install:pwa    Generate manifest.json and sw.js in /public");
-    log("green", "  install:all    npm i mysql2 redis jose bcryptjs xss (basic dependencies)\n");
+    log("green", "  install:all    npm i mysql2 redis jose bcryptjs (core stack)\n");
     console.log(`\n${colors.bold}Smart Database Commands:${colors.reset}`);
     log("green", "  mysql <table> [--limit=10] [--order-by=\"id desc\"]");
     log("green", "  mysql tables | columns <table> | query \"<sql>\"");

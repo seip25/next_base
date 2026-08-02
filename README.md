@@ -98,9 +98,9 @@ npm run cli install:auth    # Installs jose
 npm run cli install:bcrypt  # Installs bcryptjs
 npm run cli install:upload  # Installs multer
 npm run cli install:queue   # Installs bullmq and ioredis
-npm run cli install:validator # Installs xss
+npm run cli install:validator # Installs xss (optional for advanced sanitization)
 npm run cli install:mail    # Installs nodemailer
-npm run cli install:all     # Installs basic dependencies (db, cache, auth, bcrypt, validator)
+npm run cli install:all     # Installs core stack (db, cache, auth, bcrypt)
 npm run cli install:pwa     # Generates manifest.json and sw.js in public/
 ```
 

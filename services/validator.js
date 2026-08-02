@@ -1,4 +1,33 @@
-import xss from "xss";
+let xssFn = null;
+
+async function getXss() {
+  if (!xssFn) {
+    try {
+      const module = await import("xss");
+      xssFn = module.default || module;
+    } catch {
+      xssFn = (str) =>
+        String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#x27;");
+    }
+  }
+  return xssFn;
+}
+
+function sanitizeStringSync(str) {
+  if (typeof str !== "string") return str;
+  if (xssFn) return xssFn(str);
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
 
 const messages_default = {
   es: {
@@ -167,7 +196,8 @@ export class Validator {
       const displayField = config.alias || (field.charAt(0).toUpperCase() + field.slice(1));
 
       if (config.xss !== false && typeof value === "string") {
-        body[field] = xss(value);
+        const sanitize = await getXss();
+        body[field] = sanitize(value);
         value = body[field];
       }
 
@@ -314,7 +344,7 @@ export class Validator {
   static mutateSanitized(obj) {
     for (const key in obj) {
       if (typeof obj[key] === "string") {
-        obj[key] = xss(obj[key]);
+        obj[key] = sanitizeStringSync(obj[key]);
       } else if (typeof obj[key] === "object" && obj[key] !== null) {
         Validator.mutateSanitized(obj[key]);
       }
@@ -322,7 +352,7 @@ export class Validator {
   }
 
   static sanitizeObject(obj) {
-    if (typeof obj === "string") return xss(obj);
+    if (typeof obj === "string") return sanitizeStringSync(obj);
     if (Array.isArray(obj))
       return obj.map((item) => Validator.sanitizeObject(item));
     if (typeof obj === "object" && obj !== null) {
