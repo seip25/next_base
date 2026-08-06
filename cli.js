@@ -11,8 +11,9 @@ const ENV_FILE = path.join(ROOT_DIR, ".env");
 const envConfig = {};
 if (fs.existsSync(ENV_FILE)) {
   const envContent = fs.readFileSync(ENV_FILE, "utf-8");
-  envContent.split("\n").forEach((line) => {
-    const match = line.match(/^([^#=]+)=(.*)$/);
+  envContent.split(/\r?\n/).forEach((line) => {
+    const trimmed = line.trim();
+    const match = trimmed.match(/^([^#=]+)=(.*)$/);
     if (match) {
       const key = match[1].trim();
       const value = match[2].trim().replace(/^['"]|['"]$/g, "");
@@ -96,7 +97,7 @@ const commands = {
     log("green", "[dev] Starting MySQL and Redis via Docker Compose...");
     runCommand("docker compose up -d mysql redis");
     log("green", "[dev] Waiting for services to be healthy...");
-    runCommand("sleep 3");
+    runCommand('node -e "setTimeout(() => {}, 3000)"');
     log("green", "[dev] Starting Next.js in development mode...");
     runCommand("npm run dev");
   },
@@ -153,7 +154,9 @@ const commands = {
     log("green", "[clean] Stopping services and removing volumes...");
     runCommand("docker compose down -v");
     log("green", "[clean] Removing .next build output...");
-    runCommand("rm -rf .next");
+    if (fs.existsSync(path.join(ROOT_DIR, ".next"))) {
+      fs.rmSync(path.join(ROOT_DIR, ".next"), { recursive: true, force: true });
+    }
   },
   prune: () => {
     log(
@@ -178,7 +181,7 @@ const commands = {
     const dbUser = process.env.DB_USER || "next_base";
     const dbPass = process.env.DB_PASSWORD || "next_base";
     const dbName = process.env.DB_NAME || "next_base";
-    
+
     if (args.length === 0) {
       log("green", "[mysql] Connecting to MySQL shell in container...");
       runCommand(
@@ -211,7 +214,7 @@ const commands = {
   redis: (args = []) => {
     const redisPass = process.env.REDIS_PASSWORD;
     const auth = redisPass ? `-a "${redisPass}"` : "";
-    
+
     if (args.length === 0) {
       log("green", "[redis] Connecting to redis-cli in container...");
       runCommand(`docker compose exec -it redis redis-cli ${auth}`);
@@ -220,7 +223,7 @@ const commands = {
 
     const baseExec = `docker compose exec -T redis redis-cli ${auth}`;
     const subCmd = args[0];
-    
+
     if (subCmd === "keys") {
       runCommand(`${baseExec} KEYS "${args[1] || '*'}"`);
     } else if (subCmd === "get" && args[1]) {
@@ -309,7 +312,7 @@ const commands = {
     log("green", "[pwa] Generating public/manifest.json and public/sw.js...");
     const publicDir = path.join(process.cwd(), "public");
     if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir);
-    
+
     const manifest = {
       name: APP_NAME,
       short_name: APP_NAME,
@@ -324,7 +327,7 @@ const commands = {
     const sw = `self.addEventListener("install", (e) => { e.waitUntil(caches.open("v1").then((cache) => cache.addAll(["/"]))); });
 self.addEventListener("fetch", (e) => { e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request))); });`;
     fs.writeFileSync(path.join(publicDir, "sw.js"), sw);
-    
+
     log("green", "PWA files generated! Add <link rel=\"manifest\" href=\"/manifest.json\"> to your layout.");
   },
   worker: () => {
