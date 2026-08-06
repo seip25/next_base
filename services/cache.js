@@ -1,18 +1,13 @@
-/**
- * Cache service wrapper around Redis client.
- */
 export class Cache {
   constructor() {
-    /** @type {any} */
     this.client = null;
     this.connecting = false;
+    this.useMemory = false;
+    this.memoryStore = new Map();
   }
 
-  /**
-   * Initializes and connects Redis client if not already connected.
-   * @returns {Promise<any>}
-   */
   async getClient() {
+    if (this.useMemory) return null;
     if (this.client?.isReady) return this.client;
 
     if (this.connecting) {
@@ -27,10 +22,10 @@ export class Cache {
       const redisModule = await import("redis");
       createClient = redisModule.createClient;
     } catch {
+      console.warn("[Cache] 'redis' package not found. Falling back to In-Memory store.");
+      this.useMemory = true;
       this.connecting = false;
-      throw new Error(
-        "[Cache] 'redis' package is not installed. Run: npm run cli install:cache or npm i redis",
-      );
+      return null;
     }
 
     const password = process.env.REDIS_PASSWORD;
@@ -51,26 +46,32 @@ export class Cache {
           },
         },
       });
-      this.client.on("error", () => { });
+
+      this.client.on("error", () => {});
       await this.client.connect();
     } catch (err) {
+      console.warn(`[Cache] Redis connection failed (${err.message}). Falling back to In-Memory store.`);
       this.client = null;
-      this.connecting = false;
-      throw err;
+      this.useMemory = true;
     }
 
     this.connecting = false;
     return this.client;
   }
 
-  /**
-   * Retrieves a cached value by key.
-   * @param {string} key
-   * @returns {Promise<any|null>}
-   */
   async get(key) {
+    const client = await this.getClient();
+    if (!client) {
+      const item = this.memoryStore.get(key);
+      if (!item) return null;
+      if (item.expiresAt && Date.now() > item.expiresAt) {
+        this.memoryStore.delete(key);
+        return null;
+      }
+      return item.value;
+    }
+
     try {
-      const client = await this.getClient();
       const value = await client.get(key);
       if (value === null) return null;
       try {
@@ -83,16 +84,15 @@ export class Cache {
     }
   }
 
-  /**
-   * Stores a value in cache with optional TTL.
-   * @param {string} key
-   * @param {any} value
-   * @param {number} [ttlSeconds]
-   * @returns {Promise<void>}
-   */
   async set(key, value, ttlSeconds) {
+    const client = await this.getClient();
+    if (!client) {
+      const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
+      this.memoryStore.set(key, { value, expiresAt });
+      return;
+    }
+
     try {
-      const client = await this.getClient();
       const serialized =
         typeof value === "string" ? value : JSON.stringify(value);
       if (ttlSeconds) {
@@ -100,45 +100,52 @@ export class Cache {
       } else {
         await client.set(key, serialized);
       }
-    } catch { }
+    } catch {}
   }
 
-  /**
-   * Deletes one or multiple keys from cache.
-   * @param {string|Array<string>} keys
-   * @returns {Promise<void>}
-   */
   async del(keys) {
+    const client = await this.getClient();
+    const keyList = Array.isArray(keys) ? keys : [keys];
+    if (!client) {
+      keyList.forEach((k) => this.memoryStore.delete(k));
+      return;
+    }
+
     try {
-      const client = await this.getClient();
-      const keyList = Array.isArray(keys) ? keys : [keys];
       if (keyList.length > 0) {
         await client.del(keyList);
       }
-    } catch { }
+    } catch {}
   }
 
-  /**
-   * Sets TTL expiration on a key.
-   * @param {string} key
-   * @param {number} ttlSeconds
-   * @returns {Promise<void>}
-   */
   async expire(key, ttlSeconds) {
+    const client = await this.getClient();
+    if (!client) {
+      const item = this.memoryStore.get(key);
+      if (item) {
+        item.expiresAt = Date.now() + ttlSeconds * 1000;
+      }
+      return;
+    }
+
     try {
-      const client = await this.getClient();
       await client.expire(key, ttlSeconds);
-    } catch { }
+    } catch {}
   }
 
-  /**
-   * Invalidates all keys matching a glob pattern using SCAN.
-   * @param {string} pattern
-   * @returns {Promise<void>}
-   */
   async invalidatePattern(pattern) {
+    const client = await this.getClient();
+    if (!client) {
+      const regex = new RegExp("^" + pattern.replace(/\*/g, ".*") + "$");
+      for (const key of this.memoryStore.keys()) {
+        if (regex.test(key)) {
+          this.memoryStore.delete(key);
+        }
+      }
+      return;
+    }
+
     try {
-      const client = await this.getClient();
       let cursor = 0;
       do {
         const result = await client.scan(cursor, { MATCH: pattern, COUNT: 100 });
@@ -147,16 +154,9 @@ export class Cache {
           await client.del(result.keys);
         }
       } while (cursor !== 0);
-    } catch { }
+    } catch {}
   }
 
-  /**
-   * Returns cached value or executes fn and caches result.
-   * @param {string} key
-   * @param {number} ttlSeconds
-   * @param {function(): Promise<any>} fn
-   * @returns {Promise<any>}
-   */
   async remember(key, ttlSeconds, fn) {
     const cached = await this.get(key);
     if (cached !== null) return cached;
@@ -165,17 +165,13 @@ export class Cache {
     return value;
   }
 
-  /**
-   * Disconnects Redis client.
-   * @returns {Promise<void>}
-   */
   async disconnect() {
     if (this.client?.isReady) {
       await this.client.disconnect();
       this.client = null;
     }
+    this.memoryStore.clear();
   }
 }
 
 export const cache = new Cache();
-
