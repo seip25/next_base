@@ -5,6 +5,8 @@ RUN npm ci
 
 FROM node:22-alpine AS builder
 WORKDIR /app
+ARG NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
@@ -25,3 +27,4 @@ COPY ecosystem.config.js ./
 EXPOSE 3000
 
 CMD ["pm2-runtime", "ecosystem.config.js"]
+

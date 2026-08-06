@@ -3,8 +3,8 @@ module.exports = {
     {
       name: process.env.APP_NAME || "next_base",
       script: "server.js",
-      instances: "max",
-      exec_mode: "cluster",
+      instances: 1,
+      exec_mode: "fork",
       max_memory_restart: "1G",
       env: {
         NODE_ENV: "production",
@@ -32,3 +32,4 @@ if (process.env.BACKGROUND_JOBS === "true" || process.env.BACKGROUND_JOBS === "1
     },
   });
 }
+
