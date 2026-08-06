@@ -29,7 +29,7 @@ export class Cache {
     } catch {
       this.connecting = false;
       throw new Error(
-        "[Cache] 'redis' package is not installed. Run: npm run cli  install:cache or npm i redis",
+        "[Cache] 'redis' package is not installed. Run: npm run cli install:cache or npm i redis",
       );
     }
 
@@ -40,13 +40,26 @@ export class Cache {
       ? `redis://:${password}@${host}:${port}`
       : `redis://${host}:${port}`;
 
-    this.client = createClient({ url });
-    this.client.on("error", (err) =>
-      console.error("[Cache] Redis error:", err),
-    );
-    await this.client.connect();
-    this.connecting = false;
+    try {
+      this.client = createClient({
+        url,
+        socket: {
+          connectTimeout: 2000,
+          reconnectStrategy: (retries) => {
+            if (retries > 1) return new Error("Redis connection failed");
+            return 300;
+          },
+        },
+      });
+      this.client.on("error", () => { });
+      await this.client.connect();
+    } catch (err) {
+      this.client = null;
+      this.connecting = false;
+      throw err;
+    }
 
+    this.connecting = false;
     return this.client;
   }
 
@@ -56,13 +69,17 @@ export class Cache {
    * @returns {Promise<any|null>}
    */
   async get(key) {
-    const client = await this.getClient();
-    const value = await client.get(key);
-    if (value === null) return null;
     try {
-      return JSON.parse(value);
+      const client = await this.getClient();
+      const value = await client.get(key);
+      if (value === null) return null;
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
     } catch {
-      return value;
+      return null;
     }
   }
 
@@ -74,14 +91,16 @@ export class Cache {
    * @returns {Promise<void>}
    */
   async set(key, value, ttlSeconds) {
-    const client = await this.getClient();
-    const serialized =
-      typeof value === "string" ? value : JSON.stringify(value);
-    if (ttlSeconds) {
-      await client.setEx(key, ttlSeconds, serialized);
-    } else {
-      await client.set(key, serialized);
-    }
+    try {
+      const client = await this.getClient();
+      const serialized =
+        typeof value === "string" ? value : JSON.stringify(value);
+      if (ttlSeconds) {
+        await client.setEx(key, ttlSeconds, serialized);
+      } else {
+        await client.set(key, serialized);
+      }
+    } catch { }
   }
 
   /**
@@ -90,11 +109,13 @@ export class Cache {
    * @returns {Promise<void>}
    */
   async del(keys) {
-    const client = await this.getClient();
-    const keyList = Array.isArray(keys) ? keys : [keys];
-    if (keyList.length > 0) {
-      await client.del(keyList);
-    }
+    try {
+      const client = await this.getClient();
+      const keyList = Array.isArray(keys) ? keys : [keys];
+      if (keyList.length > 0) {
+        await client.del(keyList);
+      }
+    } catch { }
   }
 
   /**
@@ -104,8 +125,10 @@ export class Cache {
    * @returns {Promise<void>}
    */
   async expire(key, ttlSeconds) {
-    const client = await this.getClient();
-    await client.expire(key, ttlSeconds);
+    try {
+      const client = await this.getClient();
+      await client.expire(key, ttlSeconds);
+    } catch { }
   }
 
   /**
@@ -114,15 +137,17 @@ export class Cache {
    * @returns {Promise<void>}
    */
   async invalidatePattern(pattern) {
-    const client = await this.getClient();
-    let cursor = 0;
-    do {
-      const result = await client.scan(cursor, { MATCH: pattern, COUNT: 100 });
-      cursor = result.cursor;
-      if (result.keys.length > 0) {
-        await client.del(result.keys);
-      }
-    } while (cursor !== 0);
+    try {
+      const client = await this.getClient();
+      let cursor = 0;
+      do {
+        const result = await client.scan(cursor, { MATCH: pattern, COUNT: 100 });
+        cursor = result.cursor;
+        if (result.keys.length > 0) {
+          await client.del(result.keys);
+        }
+      } while (cursor !== 0);
+    } catch { }
   }
 
   /**
@@ -153,3 +178,4 @@ export class Cache {
 }
 
 export const cache = new Cache();
+
