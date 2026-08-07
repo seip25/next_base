@@ -4,8 +4,8 @@ import { proxyConfig } from "../proxy.js";
  * @returns {import('next').MetadataRoute.Sitemap}
  */
 export default function sitemap() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
   const publicRoutes = proxyConfig.publicRoutes
     .filter(route => !route.includes("("))
     .map(route => ({
