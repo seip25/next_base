@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./assets/bluebird.css";
+import { BluebirdProvider } from "@/components/ui";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,8 +25,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        {children}
-        <Script src="/assets/bluebird.js" strategy="lazyOnload" />
+        <BluebirdProvider>{children}</BluebirdProvider>
       </body>
     </html>
   );

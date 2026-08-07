@@ -1,67 +1,77 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect } from "react";
+import {
+  Button,
+  ThemeToggle,
+  toast,
+  snackbar,
+  commandPalette,
+  DataTable,
+  Tabs,
+  TabList,
+  TabTrigger,
+  TabContent,
+  Carousel,
+  CarouselTrack,
+  CarouselItem,
+  CarouselPrev,
+  CarouselNext,
+  CarouselIndicators,
+} from "@/components/ui";
+
+const sampleColumns = [
+  { key: "id", title: "ID" },
+  { key: "name", title: "Nombre" },
+  { key: "role", title: "Rol" },
+  { key: "status", title: "Estado" },
+];
+
+const sampleData = [
+  { id: "USR-001", name: "Ana García", role: "Administrador", status: "Activo" },
+  { id: "USR-002", name: "Carlos López", role: "Desarrollador", status: "Inactivo" },
+  { id: "USR-003", name: "María Rodríguez", role: "Diseñadora UI", status: "Activo" },
+  { id: "USR-004", name: "Juan Martínez", role: "DevOps", status: "Pendiente" },
+  { id: "USR-005", name: "Sofía Fernández", role: "QA Engineer", status: "Activo" },
+];
 
 export default function Home() {
   const triggerToast = (type, title, description) => {
-    if (typeof window !== "undefined" && window.toast) {
-      window.toast({
-        title: title || "Action Triggered",
-        description: description || "Blue Bird CSS toast notification system active.",
-        type: type || "success",
-        position: "bottom-right",
-        duration: 4000,
-      });
-    } else {
-      alert(`${title}: ${description}`);
-    }
+    toast({
+      title: title || "Action Triggered",
+      description: description || "Bluebird JS React component notification system active.",
+      type: type || "success",
+      position: "bottom-right",
+      duration: 4000,
+    });
   };
 
   const triggerSnackbar = () => {
-    if (typeof window !== "undefined" && window.snackbar) {
-      window.snackbar({
-        message: "Item processed successfully with Bluebird JS!",
-        type: "info",
-        duration: 3000,
-      });
-    }
+    snackbar({
+      message: "Item processed successfully with Bluebird UI!",
+      type: "info",
+      duration: 3000,
+    });
   };
-  const changeTheme = (event) => {
-    event.preventDefault();
-    if (window.localStorage.getItem("theme") !== "dark") {
-      document.documentElement.setAttribute("data-theme", "dark");
-      window.localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.setAttribute("data-theme", "light");
-      window.localStorage.setItem("theme", "light");
-    }
-  }
-  useEffect(() => {
-    if (window.localStorage.getItem("theme")) {
-      document.documentElement.setAttribute("data-theme", window.localStorage.getItem("theme"));
-    } else {
-      document.documentElement.setAttribute("data-theme", "light");
-      window.localStorage.setItem("theme", "light");
-    }
-  }, []);
 
   return (
     <div>
       <header>
         <nav>
-          <h5>
-            Blue Bird CSS & Nextjs Base Template
-          </h5>
-          <div className="flex">
-            <button onClick={changeTheme}
-              className="outline ">
-              Change Theme
-            </button>
+          <h5>Blue Bird CSS &amp; Nextjs Base Template</h5>
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => commandPalette("open")}
+            >
+              🔍 Commands (Ctrl+K)
+            </Button>
+            <ThemeToggle />
           </div>
-
         </nav>
       </header>
+
       <main className="container py-4 pb-4">
         {/* Hero Header Section */}
         <header className="text-center mb-4">
@@ -76,7 +86,7 @@ export default function Home() {
           </div>
           <h1 className="mb-2">Next.js Production Base Template</h1>
           <p className="text-secondary mb-4">
-            A modern, production-ready Next.js starter paired with the zero-config <strong>Blue Bird CSS &amp; JS Framework</strong>.
+            A modern, production-ready Next.js starter paired with the native <strong>Bluebird UI Component System</strong>.
           </p>
 
           {/* Framework Banner Badge */}
@@ -88,21 +98,22 @@ export default function Home() {
               rel="noopener noreferrer"
               className="font-semibold"
             >
-              Blue Bird CSS Framework
+              Blue Bird CSS &amp; UI Components
             </a>
-            <span>— Semantic HTML inspired by <strong>shadcn/ui</strong> &amp; <strong>Pico.css</strong> with Tailwind utility speed.</span>
+            <span>— Direct React integration with <code>@/components/ui</code>.</span>
           </div>
 
           {/* Hero Quick Actions */}
           <div className="flex gap-4 justify-center flex-wrap">
-            <button
-              onClick={() => triggerToast("success", "Welcome!", "Blue Bird CSS & JS framework is active.")}
+            <Button
+              variant="primary"
+              onClick={() => triggerToast("success", "Welcome!", "Bluebird UI components are active.")}
             >
               Test Toast Notification
-            </button>
-            <button className="secondary" onClick={triggerSnackbar}>
+            </Button>
+            <Button variant="secondary" onClick={triggerSnackbar}>
               Test Snackbar Alert
-            </button>
+            </Button>
             <a
               role="button"
               className="badge-glow"
@@ -117,26 +128,26 @@ export default function Home() {
 
         {/* Blue Bird Component Showcase Grid */}
         <section className="card mb-4">
-          <h2>Blue Bird Live Component Showcase</h2>
+          <h2>Blue Bird Native Component Showcase</h2>
           <p className="text-secondary mb-4">
-            Zero build step, semantic HTML components styled out-of-the-box.
+            Directly imported React Client Components (<code>@/components/ui</code>).
           </p>
 
           <div className="flex flex-wrap gap-4">
             {/* Buttons & Soft Tints */}
             <div className="p-4 border rounded flex-1">
-              <h3>Buttons &amp; Soft Tints</h3>
+              <h3>Buttons &amp; Ripple Effects</h3>
               <div className="flex flex-wrap gap-2 mt-3">
-                <button className="primary btn-sm">Primary</button>
-                <button className="secondary btn-sm">Secondary</button>
-                <button className="destructive btn-sm">Destructive</button>
-                <button className="bg-blue-subtle btn-sm">Blue Subtle</button>
-                <button className="bg-green-subtle btn-sm">Green Subtle</button>
-                <button className="bg-purple-subtle btn-sm">Purple Subtle</button>
-                <button className="glow-cyberpunk btn-sm">Cyberpunk</button>
-                <button className="primary glow-pulse">Energy Pulse</button>
-                <button className="bg-blue glow-blue">Glow Blue</button>
-                <button className="bg-pink glow-pink">Glow Pink</button>
+                <Button variant="primary" size="sm">Primary</Button>
+                <Button variant="secondary" size="sm">Secondary</Button>
+                <Button variant="destructive" size="sm">Destructive</Button>
+                <Button variant="bg-blue-subtle" size="sm">Blue Subtle</Button>
+                <Button variant="bg-green-subtle" size="sm">Green Subtle</Button>
+                <Button variant="bg-purple-subtle" size="sm">Purple Subtle</Button>
+                <Button glow="cyberpunk" size="sm">Cyberpunk</Button>
+                <Button variant="primary" glow="pulse">Energy Pulse</Button>
+                <Button variant="bg-blue" glow="blue">Glow Blue</Button>
+                <Button variant="bg-pink" glow="pink">Glow Pink</Button>
               </div>
             </div>
 
@@ -157,6 +168,90 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Interactive Tabs Showcase */}
+        <section className="card mb-4">
+          <h2>Interactive Tabs Component</h2>
+          <p className="text-secondary mb-3">
+            Pure React state management with <code>&lt;Tabs&gt;</code> component.
+          </p>
+
+          <Tabs defaultValue="overview">
+            <TabList>
+              <TabTrigger value="overview">Overview</TabTrigger>
+              <TabTrigger value="features">Features</TabTrigger>
+              <TabTrigger value="analytics">Analytics</TabTrigger>
+            </TabList>
+
+            <TabContent value="overview" className="p-4 border border-t-0 rounded-b">
+              <h4>Overview Panel</h4>
+              <p className="text-secondary">
+                This is the overview tab content styled with Bluebird CSS.
+              </p>
+            </TabContent>
+
+            <TabContent value="features" className="p-4 border border-t-0 rounded-b">
+              <h4>Features List</h4>
+              <ul className="text-secondary pl-4">
+                <li>Direct component imports from <code>@/components/ui</code></li>
+                <li>Material Ripple effect on buttons</li>
+                <li>Responsive Data Table with mobile card rendering</li>
+              </ul>
+            </TabContent>
+
+            <TabContent value="analytics" className="p-4 border border-t-0 rounded-b">
+              <h4>Analytics Summary</h4>
+              <p className="text-secondary">
+                Performance: 100% Client Component ready.
+              </p>
+            </TabContent>
+          </Tabs>
+        </section>
+
+        {/* Responsive Data Table Section */}
+        <section className="card mb-4">
+          <h2>Responsive Data Table (<code>DataTable</code>)</h2>
+          <p className="text-secondary mb-4">
+            Responsive table with search, pagination, desktop table view, and mobile card view adapted for Bluebird CSS.
+          </p>
+
+          <DataTable
+            data={sampleData}
+            columns={sampleColumns}
+            summaryFields={["name", "role"]}
+            rowsPerPage={3}
+            onEdit={(e, item) => triggerToast("info", "Edit User", `Editing ${item.name}`)}
+            onDelete={(e, item) => triggerToast("error", "Delete User", `Deleting ${item.name}`)}
+          />
+        </section>
+
+        {/* Touch Carousel Section */}
+        <section className="card mb-4">
+          <h2>Touch Carousel (<code>Carousel</code>)</h2>
+          <p className="text-secondary mb-4">
+            Interactive slider with touch swipe &amp; mouse drag support.
+          </p>
+
+          <Carousel autoplay={true} interval={4000}>
+            <CarouselTrack>
+              <CarouselItem className="p-6 bg-surface border rounded-xl text-center">
+                <h3>Slide 1: Zero-Config Framework</h3>
+                <p className="text-secondary">Seamlessly integrated into Next.js App Router.</p>
+              </CarouselItem>
+              <CarouselItem className="p-6 bg-surface border rounded-xl text-center">
+                <h3>Slide 2: Direct UI Components</h3>
+                <p className="text-secondary">Import buttons, modals, tabs, toasts directly.</p>
+              </CarouselItem>
+              <CarouselItem className="p-6 bg-surface border rounded-xl text-center">
+                <h3>Slide 3: Responsive Data Table</h3>
+                <p className="text-secondary">Adapts automatically on mobile devices.</p>
+              </CarouselItem>
+            </CarouselTrack>
+            <CarouselPrev />
+            <CarouselNext />
+            <CarouselIndicators />
+          </Carousel>
+        </section>
+
         {/* Modes of Operation */}
         <section className="card mb-4">
           <h2>Modes of Operation</h2>
@@ -167,9 +262,7 @@ export default function Home() {
                 Ideal for static pages, simple content, or apps without external database dependencies.
               </p>
               <pre>
-                <code>npm run dev     # Local development server
-                  npm run build   # Production standalone bundle
-                  npm run start   # Start Next.js server</code>
+                <code>npm run dev     # Local development server{"\n"}npm run build   # Production standalone bundle{"\n"}npm run start   # Start Next.js server</code>
               </pre>
             </div>
 
@@ -179,133 +272,8 @@ export default function Home() {
                 Full-stack mode with MySQL, Redis, Nginx reverse proxy, and PM2 process clustering.
               </p>
               <pre>
-                <code>npm run cli dev    # Docker (DB/Redis) + local Next.js
-                  npm run cli prod   # Full stack production launch</code>
+                <code>npm run cli dev    # Docker (DB/Redis) + local Next.js{"\n"}npm run cli prod   # Full stack production launch</code>
               </pre>
-            </div>
-          </div>
-        </section>
-
-        {/* CLI Quick Reference */}
-        <section className="card mb-4">
-          <h2>Unified Management CLI Reference</h2>
-          <p className="text-secondary mb-4">
-            Manage stack containers, generate secrets, run interactive database shells, and install optional dependencies via <code>npm run cli &lt;command&gt;</code>.
-          </p>
-
-          <details className="mb-3">
-            <summary>Stack Management Commands</summary>
-            <table className="mt-3">
-              <thead>
-                <tr>
-                  <th>Command</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>cli dev</code></td>
-                  <td>Launches MySQL &amp; Redis in Docker + Next.js on host</td>
-                </tr>
-                <tr>
-                  <td><code>cli build</code></td>
-                  <td>Compiles Next.js app and builds Docker container image</td>
-                </tr>
-                <tr>
-                  <td><code>cli prod</code></td>
-                  <td>One-shot build and launch for containerized production</td>
-                </tr>
-                <tr>
-                  <td><code>cli stop</code></td>
-                  <td>Gracefully stops all running stack containers</td>
-                </tr>
-                <tr>
-                  <td><code>cli clean</code></td>
-                  <td>Stops containers and removes persistent volumes &amp; build files</td>
-                </tr>
-              </tbody>
-            </table>
-          </details>
-
-          <details className="mb-3">
-            <summary>Interactive Shells &amp; Secret Generators</summary>
-            <table className="mt-3">
-              <thead>
-                <tr>
-                  <th>Command</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>cli mysql</code></td>
-                  <td>Opens interactive MySQL CLI shell inside container</td>
-                </tr>
-                <tr>
-                  <td><code>cli redis</code></td>
-                  <td>Opens interactive <code>redis-cli</code> shell inside container</td>
-                </tr>
-                <tr>
-                  <td><code>cli gen:jwt</code></td>
-                  <td>Generates random 64-char <code>JWT_SECRET</code> in <code>.env</code></td>
-                </tr>
-                <tr>
-                  <td><code>cli gen:all</code></td>
-                  <td>Generates database, redis, and JWT secrets automatically</td>
-                </tr>
-              </tbody>
-            </table>
-          </details>
-
-          <details>
-            <summary>On-Demand Dependency Installers</summary>
-            <div className="py-2">
-              <p className="mb-2">
-                Install modular stack services on demand:
-              </p>
-              <pre>
-                <code>npm run cli install:db        # mysql2
-                  npm run cli install:cache     # redis
-                  npm run cli install:auth      # jose JWT
-                  npm run cli install:bcrypt    # bcryptjs
-                  npm run cli install:pwa       # Generate manifest.json & sw.js</code>
-              </pre>
-            </div>
-          </details>
-        </section>
-
-        {/* Modular Services Layer Overview */}
-        <section className="card mb-4">
-          <h2>Framework-Agnostic Services Layer (<code>/services/</code>)</h2>
-          <p className="text-secondary mb-4">
-            Production-grade abstractions defined outside <code>src/</code> for long-term architectural stability.
-          </p>
-
-          <div className="flex flex-wrap gap-4">
-            <div className="border p-4 rounded flex-1">
-              <h3>Database &amp; Cache</h3>
-              <ul className="text-secondary m-0 pl-4">
-                <li><strong>MySQL Pool (<code>services/db.js</code>):</strong> Clean async queries &amp; transactions.</li>
-                <li><strong>Redis Client (<code>services/cache.js</code>):</strong> Key-value caching &amp; automatic remember wrapper.</li>
-              </ul>
-            </div>
-
-            <div className="border p-4 rounded flex-1">
-              <h3>Security &amp; Auth</h3>
-              <ul className="text-secondary m-0 pl-4">
-                <li><strong>JWT Auth (<code>services/auth.js</code>):</strong> Sign &amp; verify JWTs using <code>jose</code>.</li>
-                <li><strong>Cookies (<code>services/cookies.js</code>):</strong> Server-side HTTP cookie management.</li>
-                <li><strong>Password Hashing (<code>services/password.js</code>):</strong> Secure <code>bcryptjs</code> helper.</li>
-              </ul>
-            </div>
-
-            <div className="border p-4 rounded flex-1">
-              <h3>Protection &amp; Sanitization</h3>
-              <ul className="text-secondary m-0 pl-4">
-                <li><strong>Proxy Guard (<code>services/middleware.js</code>):</strong> HOF route protection for App Router.</li>
-                <li><strong>Data Sanitizer (<code>services/validator.js</code>):</strong> XSS protection &amp; schema validation.</li>
-                <li><strong>Rate Limiting (<code>services/rate-limit.js</code>):</strong> Redis token bucket rate limiter.</li>
-              </ul>
             </div>
           </div>
         </section>
